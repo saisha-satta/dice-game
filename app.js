@@ -6,11 +6,13 @@ GAME RULES:
 - BUT, if the player rolls a 1, all his ROUND score gets lost. After that, it's the next player's turn
 - The player can choose to 'Hold', which means that his ROUND score gets added to his GLBAL score. After that, it's the next player's turn
 - The first player to reach 100 points on GLOBAL score wins the game
-
+- A player looses his entire score when they roll 6 twice in a row. After that, its the next players turn and remember to save the previous dice roll in a sep value
+- Add an input field to the html where players can set the winning score, so that they can change the predefined score of 100. (hint: can read that value with the .value property in js.)
+- Add another dice to the game, so that there are two dices now. The player looses their current score when one of them is a 1. (hint: will need css to position the second dice.)
 */
 
 // multiple variable declarations globally - gamePlaying is a state variable
-var scores, roundScore, activePlayer, gamePlaying;
+var scores, roundScore, activePlayer, lastDiceValue, gamePlaying;
 
 //call a new game
 init();
@@ -19,25 +21,25 @@ init();
 document.querySelector('.btn-roll').addEventListener('click', function(){
     //if game is currently playing...
     if (gamePlaying) {
-        //1. random number
-        dice = Math.floor(Math.random() * 6) + 1;
-
-        //2. display result
-        var diceDOM = document.querySelector('.dice');
-        diceDOM.style.display = 'block';
-        diceDOM.src = 'dice-' + dice + '.png';
-
-        //3. update the round score if the number is not 1
-        if (dice !== 1) {
+        //random number for dice value
+        var dice1 = Math.floor(Math.random() * 6) + 1;
+        var dice2 = Math.floor(Math.random() * 6) + 1;
+        
+        //display result
+        document.getElementById('dice-1').style.display = 'block';
+        document.getElementById('dice-2').style.display = 'block';
+        document.getElementById('dice-1').src = 'dice-' + dice1 + '.png';
+        document.getElementById('dice-2').src = 'dice-' + dice2 + '.png';
+        
+        //update the round score IF the rolled number was NOT a 1
+        if (dice1 !== 1 && dice2 !== 1) {
             //add score
-            //make dice the roundScore
-            roundScore += dice;
-
-            //now add roundScore to the DOM element
+            roundScore += dice1 + dice2;
             document.querySelector('#current-' + activePlayer).textContent = roundScore;
         } else {
+            //next player
             nextPlayer();
-        }   
+        }
     }
 });
 
@@ -51,12 +53,27 @@ document.querySelector('.btn-hold').addEventListener('click', function(){
         //update UI once hold btn is clicked
         document.querySelector('#score-' + activePlayer).textContent = scores[activePlayer];
 
+        //get the value from final score input
+        var input = document.querySelector('.final-score').value;
+        
+        //declare winningScore and define it elsewhere
+        var winningScore;
+        
+        //COERCED to true - if input has a value make it winningScore
+        if (input) {
+            winningScore = input;
+        } else {
+            //otherwise (false) set the score to 100 because the input is empty
+            winningScore = 100;
+        }
+        
         //Check if player won game 
-        if(scores[activePlayer] >= 100) {
+        if(scores[activePlayer] >= winningScore) {
             //display Winner instead of Player    
             document.querySelector('#name-' + activePlayer).textContent = 'Winner!';
             //hide dice
-            document.querySelector('.dice').style.display = 'none';
+            document.getElementById('dice-1').style.display = 'none';
+            document.getElementById('dice-2').style.display = 'none';
             //add class winner to active player panel
             document.querySelector('.player-' + activePlayer + '-panel').classList.add('winner');
             //remove active class from winner panel
@@ -88,8 +105,8 @@ function nextPlayer() {
         document.querySelector('.player-1-panel').classList.toggle('active');
         
         //hide the dice again for the next player
-        document.querySelector('.dice').style.display = 'none';
-};
+        document.getElementById('dice-1').style.display = 'none';
+        document.getElementById('dice-2').style.display = 'none';};
 
 //new game button is clicked, will call the init function
 document.querySelector('.btn-new').addEventListener('click', init);
@@ -109,8 +126,9 @@ function init() {
     gamePlaying = true;
     
     // initially hide dice img
-    document.querySelector('.dice').style.display = 'none';
-
+    document.getElementById('dice-1').style.display = 'none';
+    document.getElementById('dice-2').style.display = 'none';
+    
     // show scores at 0 initially
     document.getElementById('score-0').textContent = '0';
     document.getElementById('score-1').textContent = '0';
@@ -130,7 +148,5 @@ function init() {
     
     //now add the active class to the first player because it was removed
     document.querySelector('.player-0-panel').classList.add('active');
-
-
 
 };
